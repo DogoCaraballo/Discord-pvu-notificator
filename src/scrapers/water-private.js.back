@@ -1,0 +1,197 @@
+const https = require('https')
+var request = require('request');
+
+const proxy = require('node-global-proxy').default;
+
+proxy.setConfig({
+	http: "http://135.148.32.248:20192",
+	https: "http://135.148.32.248:20192"
+	
+});
+
+proxy.start();
+
+const proxyingAgent = require('proxying-agent');
+
+var host = "135.148.32.248";
+var port = 20192;
+
+
+var agentOptions = {
+	'host': host,
+	'port': port,
+	path: '/',
+	rejectUnauthorized: false
+	
+};
+
+//agente = new https.Agent(agentOptions);
+
+
+function json2array(json){
+  var result = [];
+  var keys = Object.keys(json);
+  keys.forEach(function(key){
+      result.push(json[key]);
+  });
+  return result;
+}
+
+baseUrl = 'https://backend-farm.plantvsundead.com/farms/';
+var options = [{
+  'method': 'GET',
+  //'agent':agente,//proxyingAgent.create('https://${host}:${port}','/'),
+  'headers': {
+    'authority': 'backend-farm.plantvsundead.com',
+    'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+    'accept': 'application/json, text/plain, */*',
+    'authorization': "Bearer Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNBZGRyZXNzIjoiMHhjNDQ2MmQ1NDI2NjFiOWE2ZGVkODFiZTU0MGNhODU1MDczMjlkODljIiwibG9naW5UaW1lIjoxNjI5NDczNDg0NjI2LCJjcmVhdGVEYXRlIjoiMjAyMS0wOC0xOSAyMjozMTo0NiIsImlhdCI6MTYyOTQ3MzQ4NH0.Eje6Zuid3HzQivvMsnrEf9-e89hYxF5-UEod2xiH26g",
+    'sec-ch-ua-mobile': '?0',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36',
+    'origin': 'https://marketplace.plantvsundead.com',
+    'sec-fetch-site': 'same-site',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-dest': 'empty',
+    'referer': 'https://marketplace.plantvsundead.com/',
+    'accept-language': 'en-US,en;q=0.9,es;q=0.8',
+    'if-none-match': 'W/"4b3-Ho159bjXgliRA5tnp9IkdQ+L9bg"'
+  }
+},{
+   'method': 'GET',
+   //'agent':agente,//proxyingAgent.create('https://${host}:${port}','/'),
+   "headers": {
+    "accept": "application/json, text/plain, */*",
+    "accept-language": "es-419,es;q=0.9,en;q=0.8",
+    "authorization": "Bearer Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNBZGRyZXNzIjoiMHhiZTlkYTcwZjg5OTJlYTY5ZGE0ZTQ5ZDU1YjRkZGQ5OGZiNGU5YjRmIiwibG9naW5UaW1lIjoxNjI5ODA5MTAwNzYxLCJjcmVhdGVEYXRlIjoiMjAyMS0wOC0yNCAxMjo0NDo0NSIsImlhdCI6MTYyOTgwOTEwMH0.PaujLclPCllSr4oiiRe36CBDhS3uglutHPgqdGuhlSk",
+    "if-none-match": "W/\"44-GNe/fCRiiGB2f0BVwHUW57Yxjss\"",
+    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-site"
+  },
+  "referrer": "https://marketplace.plantvsundead.com/",
+  "referrerPolicy": "strict-origin-when-cross-origin",
+  "method": "GET",
+  "mode": "cors"
+}];
+
+    //"authorization": "Bearer Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNBZGRyZXNzIjoiMHhiZTlkYTcwZjg5OTJlYTY5ZGE0ZTQ5ZDU1YjRkZGQ5OGZiNGU5YjRmIiwibG9naW5UaW1lIjoxNjI5ODA5MTAwNzYxLCJjcmVhdGVEYXRlIjoiMjAyMS0wOC0yNCAxMjo0NDo0NSIsImlhdCI6MTYyOTgwOTEwMH0.PaujLclPCllSr4oiiRe36CBDhS3uglutHPgqdGuhlSk",
+
+var indexOptions = 0;
+var contadorFails = 0;
+
+
+async function fetch(direccion) {
+  return new Promise((resolve, reject) => {
+    const request = https.get(baseUrl+direccion, options[indexOptions], (res) => {
+      if (res.statusCode < 200 || res.statusCode > 299) 
+        console.log(res.statusCode + " " + (new Date()).toUTCString());
+        //return reject(new Error(`HTTP status code ${res.statusCode}`))
+
+			  const body = []
+			  res.on('data', (chunk) => body.push(chunk))
+			  res.on('end', () => {
+				const resString = Buffer.concat(body).toString()
+				resolve(resString)
+				//console.log(resString);
+				return  resString;
+			  })
+    })
+
+    request.on('error', (err) => {
+      console.log(err);
+	  return "{'sas':'sas'}";
+	  resolve("{'sas':'sas'}");
+      //reject(err)
+      
+    })
+    request.on('timeout', () => {
+		console.log("timeout");
+		resolve("{'sas':'sas'}");
+      //request.destroy();
+      //reject(new Error('timed out'));
+	  return "{'sas':'sas'}";
+    })
+  })
+}
+
+
+
+
+const respuesta = async (plantita) =>{
+  const res = await fetch(plantita)
+  
+  //console.log(json.data[9]);
+
+  try{
+	var json = JSON.parse(res);
+    //console.log(json);
+
+    var id = json.data._id;
+	
+	console.log(id);
+
+    var crow = json.data.hasCrow;
+    var hayCuervo = false;
+    if (crow && crow != 'undefined'){
+      //Debería tener cuervo la planta esa xd
+      //console.log("La planta "+ json.data._id + " tiene un cuervo!");
+      hayCuervo = true;
+    }
+    var necesitaAgua = json.data.needWater;
+    var agua = json.data.activeTools;
+    var cantidadAgua = 0;
+    try{
+    agua.forEach(elemento =>{
+      if(elemento.type === 'WATER')
+      cantidadAgua = elemento.count;
+    });
+    }catch(erro){
+      cantidadAgua = 0;
+    }
+
+    var fechaAhora = new Date().toISOString();
+    var fechaHarvest = json.data.harvestTime;
+
+    /*
+    console.log(id);
+    console.log(cantidadAgua);
+    console.log(fechaAhora>fechaHarvest)
+    console.log(hayCuervo);
+    console.log(necesitaAgua);
+    */
+	
+	if(typeof(id) == 'undefined'){
+		contadorFails += 1;
+		if (contadorFails>3){
+			contadorFails = 0;
+			indexOptions+=1;
+			console.log("Cambio de token...");
+			if (indexOptions >= options.length) indexOptions = 0;
+		};
+			
+	};
+
+    return [id,cantidadAgua,fechaAhora>fechaHarvest,hayCuervo,necesitaAgua];
+
+  }
+  catch(error){
+    //console.log(error);
+	return ["0",10,false,false,false];
+  }
+  
+
+
+  
+  //console.log(typeof(crow));
+  //console.log();
+
+
+}
+
+hello = (valor)=>{
+  return respuesta(valor);
+}
+
+module.exports.funcion = hello;
